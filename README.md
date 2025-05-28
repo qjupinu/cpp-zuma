@@ -7,4 +7,4 @@ A simplified C++ Zuma remake
 - The player carries two balls at a time and can switch between them (Right-click).
 - The player has 60 seconds to score as many points as possible before the balls reach the end.
 
-![alt text](http:https://github.com/qjupinu/cpp-zuma/assets/zuma.png)
+![Zuma](https://github.com/qjupinu/cpp-zuma/tree/main/assets/zuma.png)
