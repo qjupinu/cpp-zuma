@@ -44,10 +44,15 @@ int main() {
     exitButton.setOrigin(exitButton.getLocalBounds().width / 2, exitButton.getLocalBounds().height / 2);
     exitButton.setPosition(1300 / 2, 500);
 
-    sf::Text gameOverText("Game Over!", font, 64);
+    sf::Text gameOverText("Game Over", font, 64);
     gameOverText.setFillColor(sf::Color::White);
     gameOverText.setOrigin(gameOverText.getLocalBounds().width / 2, gameOverText.getLocalBounds().height / 2);
     gameOverText.setPosition(1300 / 2, 350);
+
+    sf::Text returnMenuButton("Return to main menu", font, 32);
+    returnMenuButton.setFillColor(sf::Color::Yellow);
+    returnMenuButton.setOrigin(returnMenuButton.getLocalBounds().width / 2, returnMenuButton.getLocalBounds().height / 2);
+    returnMenuButton.setPosition(1300 / 2, 750);
 
     sf::Text timeText("", font, 28);
     timeText.setFillColor(sf::Color::White);
@@ -78,7 +83,10 @@ int main() {
                 else if (event.mouseButton.button == sf::Mouse::Right)
                     game.swapBalls();
             } else if (state == GameState::GameOver && event.type == sf::Event::MouseButtonPressed) {
-                state = GameState::MainMenu;
+                sf::Vector2i mousePos = sf::Mouse::getPosition(window);
+                if (returnMenuButton.getGlobalBounds().contains((float)mousePos.x, (float)mousePos.y)) {
+                    state = GameState::MainMenu;
+                }
             }
         }
 
@@ -120,6 +128,8 @@ int main() {
             }
         } else if (state == GameState::GameOver) {
             window.draw(gameOverText);
+            window.draw(returnMenuButton);
+            
         }
 
         window.display();
