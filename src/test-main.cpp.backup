@@ -1,0 +1,17 @@
+#include <iostream>
+#include "GameManager.h"
+
+int main() {
+    GameManager gm;
+    gm.startGame();
+    gm.update(600, 400); 
+    std::cout << "score: " << gm.getScore() << "\n";
+
+    std::cout << "shooting...\n";
+    gm.handleShoot();
+
+    std::cout << "new score: " << gm.getScore() << "\n";
+    std::cout << "time elapsed: " << gm.getElapsedTime() << " sec\n";
+
+    return 0;
+}
