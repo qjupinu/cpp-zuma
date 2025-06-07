@@ -1,28 +1,33 @@
 #include "BallChain.h"
 #include <cmath>
 #include <iostream>
+#include "Notification.h"  // pentru funcții virtuale
+#include "Logger.h"        // pentru template
 
 BallChain::BallChain() : movementIndex(0) {}
 BallChain::BallChain(const BallChain& other) = default;
 BallChain& BallChain::operator=(const BallChain& other) = default;
 BallChain::~BallChain() {}
 
-// default: 9.5f - enough to avoid overlap
 float spacingPerBall = 9.5f;
+
+ScoreNotification scoreNotifier;
+Logger<std::string>& getChainLogger() {
+    static Logger<std::string> logger;
+    return logger;
+}
 
 const std::vector<Ball>& BallChain::getBalls() const {
     return balls;
 }
 
-// initial addBall - generate first set of balls
 void BallChain::addBall(const Ball& ball) {
     float baseIndex = (balls.empty() ? movementIndex : balls.back().getPathIndex());
     Ball b = ball;
     b.setPathIndex(baseIndex + spacingPerBall);
     balls.push_back(b);
-}
+    getChainLogger().log("Ball added at end of chain");}
 
-// insert ball based at index (infinite at start or after collision)
 void BallChain::insertBall(size_t index, const Ball& b) {
     if (index > balls.size())
         throw std::out_of_range("can't insert at this index");
@@ -44,6 +49,8 @@ void BallChain::insertBall(size_t index, const Ball& b) {
     }
 
     updatePositions();
+    getChainLogger().log("Ball inserted at index " + std::to_string(index));
+    scoreNotifier.send(0); // pentru demonstrație, 0 puncte
 }
 
 void BallChain::updatePositions() {
@@ -65,22 +72,18 @@ void BallChain::updatePositions() {
     }
 }
 
-// chain reaction handler: 3+ same color balls following collision or join
 int BallChain::checkAndEliminate() {
     int totalScore = 0;
     bool chainReaction = true;
-
     const float maxSpacing = spacingPerBall * 1.5f;
 
     while (chainReaction) {
         chainReaction = false;
-
         if (balls.size() < 3) return totalScore;
 
         size_t i = 0;
         while (i < balls.size()) {
             size_t j = i + 1;
-
             while (j < balls.size() &&
                    balls[j].getColor() == balls[i].getColor() &&
                    std::abs(balls[j].getPathIndex() - balls[j - 1].getPathIndex()) <= maxSpacing) {
@@ -91,8 +94,9 @@ int BallChain::checkAndEliminate() {
                 balls.erase(balls.begin() + i, balls.begin() + j);
                 totalScore += 50;
                 chainReaction = true;
-                updatePositions();      
-                compactChain(); 
+                updatePositions();
+                compactChain();
+                scoreNotifier.send(50); // notificare scor
                 break;
             }
 
@@ -103,10 +107,8 @@ int BallChain::checkAndEliminate() {
     return totalScore;
 }
 
-// remove spaces and join all 'subchains'
 void BallChain::compactChain() {
     if (balls.empty()) return;
-
     balls[0].setPathIndex(balls[0].getPathIndex());
 
     for (size_t i = 1; i < balls.size(); ++i) {
@@ -123,7 +125,6 @@ void BallChain::clear() {
     movementIndex = 0;
 }
 
-// generate square spiral path
 void BallChain::generatePath(int maxPoints, float spacing) {
     path.clear();
     float startX = 100.0f, startY = 150.0f;
@@ -148,7 +149,6 @@ void BallChain::generatePath(int maxPoints, float spacing) {
             }
         }
 
-        // avoid path overlap
         if (dir == 1 || dir == 3) {
             float wallSpacing = 110.0f;
             minX += wallSpacing;
@@ -164,18 +164,17 @@ void BallChain::generatePath(int maxPoints, float spacing) {
     movementIndex = 0;
 }
 
-// testing..
 int BallChain::getPathLength() const {
     return static_cast<int>(path.size());
 }
 
-// generate balls at the start of the chain (inf)
 void BallChain::addBallAtStart(const Ball& ball) {
     float baseIndex = (balls.empty() ? movementIndex : balls.front().getPathIndex());
     Ball b = ball;
     b.setPathIndex(baseIndex - spacingPerBall);
     balls.insert(balls.begin(), b);
     updatePositions();
+    getChainLogger().log("Ball added at start of chain");
 }
 
 bool intersectsSegmentCircle(sf::Vector2f p1, sf::Vector2f p2, sf::Vector2f center, float radius) {

@@ -1,4 +1,5 @@
 #include "GameManager.h"
+#include "Logger.h"
 #include <cmath>
 #include <algorithm>
 #include <iostream>
@@ -111,7 +112,7 @@ void GameManager::update(float mouseX, float mouseY, const sf::RenderWindow& win
             chain.updatePositions();
             int gained = chain.checkAndEliminate();
             // debug
-            std::cout << "erase score: " << gained << "\n";
+            // std::cout << "erase score: " << gained << "\n";
             score += gained;
             // remove launched ball from 'array'
             it = firedBalls.erase(it);
@@ -174,6 +175,8 @@ void GameManager::reset() {
 
 // draw entities
 void GameManager::render(sf::RenderWindow& window) {
+    getChainLogger().print();
+    getChainLogger().clear();
     for (const Ball& b : chain.getBalls()) {
         sf::CircleShape circle(Ball::RADIUS);
         circle.setFillColor(convertColor(b.getColor()));
